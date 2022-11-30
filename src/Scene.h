@@ -284,6 +284,7 @@ public:
             Light &light = lights[lights.size() - 1];
             light.pos = Vec3(0.0, 1.95f, 0);
             //light.radius = 2.5f;
+            light.quad.build_arrays();
             light.quad.draw();
             light.powerCorrection = 2.f;
             light.type = LightType_Quad;
