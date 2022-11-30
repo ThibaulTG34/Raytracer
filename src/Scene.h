@@ -283,11 +283,9 @@ public:
             lights.resize(lights.size() + 1);
             Light &light = lights[lights.size() - 1];
             light.pos = Vec3(0.0, 1.95f, 0);
-            //light.radius = 2.5f;
-            light.quad.build_arrays();
-            light.quad.draw();
+            light.radius = 2.5f;
             light.powerCorrection = 2.f;
-            light.type = LightType_Quad;
+            light.type = LightType_Spherical;
             light.material = Vec3(1, 1, 1);
             light.isInCamSpace = false;
         }
