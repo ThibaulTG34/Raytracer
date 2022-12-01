@@ -134,6 +134,30 @@ public:
         return color;
     } */
 
+    std::vector<Light> Arealight() {
+
+        std::vector<Light> point_light;
+        point_light.resize(lights.size());
+        for (size_t i = 0; i < lights.size(); i++)
+        {
+            Light l;
+            l.material = lights[i].material;
+            int val1 = rand();
+            int val2 = rand();
+            float theta = 2 * M_PI * val1;
+            float phi = cos(2 * val2 - 1);
+            float x = lights[i].pos[0] + (lights[i].radius * sin(phi) * cos(theta));
+            float y = lights[i].pos[1] + (lights[i].radius * sin(phi) * sin(theta));
+            float z = lights[i].pos[2] + (lights[i].radius * cos(phi));
+            //Light l;
+            l.pos = Vec3(x,y,z);
+            point_light[i] = l;
+        }
+
+        return point_light;
+    }
+
+
     Vec3 rayTraceRecursive1(Ray ray, int NRemainingBounces)
     {
         Vec3 color = Vec3(0, 0, 0);
@@ -151,13 +175,13 @@ public:
                 {
                     Vec3 lum = lights[i].pos - raySceneIntersection.raySphereIntersection.intersection;
                     lum.normalize();
-                    Vec3 reflexion = (2 * std::max((float)0.0, Vec3::dot(normal_sphere, lum))) * normal_sphere - lum;
+                    Vec3 reflexion = (2 * std::max(0.f, Vec3::dot(normal_sphere, lum))) * normal_sphere - lum;
                     reflexion.normalize();
                     Vec3 view = (-1) * ray.direction();
                     view.normalize();
                     light_ambient = spheres[index].material.ambient_material;
-                    light_diffuse = Vec3::compProduct(spheres[index].material.diffuse_material * std::max((float)0.0, Vec3::dot(lum, normal_sphere)), lights[i].material);
-                    light_specular = Vec3::compProduct(spheres[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), spheres[index].material.shininess), lights[i].material);
+                    light_diffuse = Vec3::compProduct(spheres[index].material.diffuse_material * std::max(0.f, Vec3::dot(lum, normal_sphere)), lights[i].material);
+                    light_specular = Vec3::compProduct(spheres[index].material.specular_material * pow(std::max(0.f, Vec3::dot(reflexion, view)), spheres[index].material.shininess), lights[i].material);
                     color += light_diffuse + light_specular + light_ambient;
                 }
             }
@@ -185,7 +209,7 @@ public:
                     }
                     else
                     {
-                        v ++;
+                        //v ++;
                         Vec3 reflexion = (2 * std::max((float)0.0, Vec3::dot(normal_square, lum))) * normal_square - lum;
                         reflexion.normalize();
                         Vec3 view = (-1) * ray.direction();
@@ -193,6 +217,79 @@ public:
                         light_ambient += spheres[index].material.ambient_material;
                         light_diffuse += Vec3::compProduct(squares[index].material.diffuse_material * std::max((float)0.0, Vec3::dot(lum, normal_square)), lights[i].material);
                         light_specular += Vec3::compProduct(squares[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), squares[index].material.shininess), lights[i].material);
+                    }
+
+                }
+                //v /= lum.length();
+                color = (light_diffuse + light_specular + light_ambient);
+            }
+        }
+
+        return color;
+    }
+
+    Vec3 rayTraceRecursiveSoftShadow(Ray ray, int NRemainingBounces)
+    {
+        Vec3 color = Vec3(0, 0, 0);
+        RaySceneIntersection raySceneIntersection = computeIntersection(ray);
+        std::vector<Light> area_light;
+        area_light = Arealight();
+
+        if (raySceneIntersection.intersectionExists)
+        {
+            if (raySceneIntersection.typeOfIntersectedObject == 0)
+            {
+                unsigned int index = raySceneIntersection.objectIndex;
+                Vec3 normal_sphere = raySceneIntersection.raySphereIntersection.normal;
+                Vec3 light_diffuse;
+                Vec3 light_specular;
+                Vec3 light_ambient;
+                for (unsigned int i = 0; i < area_light.size(); i++)
+                {
+                    Vec3 lum = area_light[i].pos - raySceneIntersection.raySphereIntersection.intersection;
+                    lum.normalize();
+                    Vec3 reflexion = (2 * std::max(0.f, Vec3::dot(normal_sphere, lum))) * normal_sphere - lum;
+                    reflexion.normalize();
+                    Vec3 view = (-1) * ray.direction();
+                    view.normalize();
+                    light_ambient = spheres[index].material.ambient_material;
+                    light_diffuse = Vec3::compProduct(spheres[index].material.diffuse_material * std::max(0.f, Vec3::dot(lum, normal_sphere)), area_light[i].material);
+                    light_specular = Vec3::compProduct(spheres[index].material.specular_material * pow(std::max(0.f, Vec3::dot(reflexion, view)), spheres[index].material.shininess), area_light[i].material);
+                    color += light_diffuse + light_specular + light_ambient;
+                }
+            }
+            else if (raySceneIntersection.typeOfIntersectedObject == 1)
+            {
+                unsigned int index = raySceneIntersection.objectIndex;
+                Vec3 normal_square = raySceneIntersection.raySquareIntersection.normal;
+                Vec3 light_diffuse;
+                Vec3 light_specular;
+                Vec3 light_ambient;
+                Vec3 lum;
+                float v = 0.f;
+                for (unsigned int i = 0; i < area_light.size(); i++)
+                {
+                    lum = area_light[i].pos - raySceneIntersection.raySquareIntersection.intersection;
+                    lum.normalize();
+                    //Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
+                    Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
+
+                    // color += light_diffuse + light_specular;
+                    RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
+                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0)
+                    {
+                        color = Vec3(0, 0, 0);
+                    }
+                    else
+                    {
+                        v ++;
+                        Vec3 reflexion = (2 * std::max((float)0.0, Vec3::dot(normal_square, lum))) * normal_square - lum;
+                        reflexion.normalize();
+                        Vec3 view = (-1) * ray.direction();
+                        view.normalize();
+                        light_ambient += spheres[index].material.ambient_material;
+                        light_diffuse += Vec3::compProduct(squares[index].material.diffuse_material * std::max((float)0.0, Vec3::dot(lum, normal_square)), area_light[i].material);
+                        light_specular += Vec3::compProduct(squares[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), squares[index].material.shininess), area_light[i].material);
                     }
 
                 }
@@ -205,11 +302,12 @@ public:
     }
 
 
+
     Vec3 rayTrace(Ray const &rayStart)
     {
         // TODO appeler la fonction recursive
         Vec3 color;
-        color = rayTraceRecursive1(rayStart, 1);
+        color = rayTraceRecursiveSoftShadow(rayStart, 1);
         return color;
     }
 
