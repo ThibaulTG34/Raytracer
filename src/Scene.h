@@ -233,7 +233,7 @@ public:
         Vec3 color = Vec3(0, 0, 0);
         RaySceneIntersection raySceneIntersection = computeIntersection(ray);
         std::vector<Light> area_light;
-        area_light = Arealight(4);
+        area_light = Arealight(20);
 
         if (raySceneIntersection.intersectionExists)
         {
@@ -246,7 +246,6 @@ public:
                 Vec3 light_ambient;
                 for (unsigned int i = 0; i < area_light.size(); i++)
                 {
-
                     Vec3 lum = area_light[i].pos - raySceneIntersection.raySphereIntersection.intersection;
                     lum.normalize();
                     Vec3 reflexion = (2 * std::max(0.f, Vec3::dot(normal_sphere, lum))) * normal_sphere - lum;
@@ -276,11 +275,12 @@ public:
                     lum.normalize();
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
-                    length += lum.length();
+                    //length += lum.length();
                     // color += light_diffuse + light_specular;
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
                     if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0)
                     {
+                        //v++;
                         color = Vec3(0, 0, 0);
                     }
                     else
@@ -296,8 +296,8 @@ public:
                     }
                 }
                 //length /= area_light.size();
-                v /= length;
-
+                v /= area_light.size();
+                //v = 1 - v;
                 color = v * (light_diffuse + light_specular + light_ambient);
             }
         }

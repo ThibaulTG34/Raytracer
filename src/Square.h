@@ -94,6 +94,7 @@ public:
         return intersection;
     }
 
+
     /* RaySquareIntersection intersect(const Ray &ray) const
     {
         RaySquareIntersection intersection;
