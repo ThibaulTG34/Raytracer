@@ -270,7 +270,6 @@ public:
                 float length = 0;
                 for (unsigned int i = 0; i < area_light.size(); i++)
                 {
-                    //v = 0.f;
                     lum = area_light[i].pos - raySceneIntersection.raySquareIntersection.intersection;
                     lum.normalize();
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
@@ -295,7 +294,6 @@ public:
                         light_specular += Vec3::compProduct(squares[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), squares[index].material.shininess), area_light[i].material);
                     }
                 }
-                //length /= area_light.size();
                 v /= area_light.size();
                 //v = 1 - v;
                 color = v * (light_diffuse + light_specular + light_ambient);
