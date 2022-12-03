@@ -320,7 +320,7 @@ public:
                     if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0 && new_raySceneIntersection.t < lum.length())
                     {
                         //v++;
-                        color = Vec3(0, 0, 0);
+                        color += Vec3(0, 0, 0);
                     }
                     else
                     {
@@ -340,7 +340,7 @@ public:
     {
         // TODO appeler la fonction recursive
         Vec3 color;
-        color = rayTraceRecursiveSoftShadow(rayStart, 1);
+        color = rayTraceRecursive(rayStart, 1);
         return color;
     }
 
@@ -527,6 +527,16 @@ public:
             s.material.transparency = 0.;
             s.material.index_medium = 0.;
         }
+        {
+            meshes.resize(spheres.size() + 1);
+            Mesh &s = meshes[meshes.size() - 1];
+            s.loadOFF("./data/epcot.off");
+            s.build_arrays();
+            // s.material.type = Material_Mirror;
+            s.material.diffuse_material = Vec3(1., 0., 1.);
+            s.material.specular_material = Vec3(0.2, 0.2, 0.2);
+            s.material.shininess = 20;
+        }
     }
 
     void setup_mesh()
@@ -549,7 +559,7 @@ public:
         {
             meshes.resize(spheres.size() + 1);
             Mesh &s = meshes[meshes.size() - 1];
-            s.loadOFF("./img/suzanne.off");
+            s.loadOFF("./data/epcot.off");
             s.build_arrays();
             // s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);

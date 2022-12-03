@@ -82,6 +82,7 @@ public:
 
         return result;
     }
+
     void computeBarycentricCoordinates(Vec3 const &p, float &u0, float &u1, float &u2) const
     {
         // TODO Complete
@@ -100,7 +101,7 @@ public:
         // 2) check that the triangle is "in front of" the ray:
         float NdotDir = Vec3::dot(normal(), ray.direction());
         float d = -Vec3::dot(normal(), m_c[0]);
-        float t = (Vec3::dot(normal(), ray.origin()) + d) / NdotDir;
+        float t = -(Vec3::dot(normal(), ray.origin()) + d) / NdotDir;
         if (t < 0)
         {
             result.intersectionExists = false;
@@ -112,7 +113,8 @@ public:
         Vec3 intersection = ray.origin() + t * ray.direction();
 
         Vec3 c1c0 = m_c[1] - m_c[0];
-        Vec3 cross = Vec3::cross(c1c0, intersection);
+        Vec3 vect = intersection - m_c[0];
+        Vec3 cross = Vec3::cross(c1c0, vect);
         if (Vec3::dot(normal(), cross) < 0)
         {
             result.intersectionExists = false;
@@ -120,7 +122,8 @@ public:
         }
 
         Vec3 c2c1 = m_c[2] - m_c[1];
-        cross = Vec3::cross(c2c1, intersection);
+        vect = intersection - m_c[1];
+        cross = Vec3::cross(c2c1, vect);
         if (Vec3::dot(normal(), cross) < 0)
         {
             result.intersectionExists = false;
@@ -128,19 +131,20 @@ public:
         }
 
         Vec3 c0c2 = m_c[0] - m_c[2];
-        cross = Vec3::cross(c0c2, intersection);
+        vect = intersection - m_c[2];
+        cross = Vec3::cross(c0c2, vect);
         if (Vec3::dot(normal(), cross) < 0)
         {
             result.intersectionExists = false;
             return result;
         }
 
+
         // 4) Finally, if all conditions were met, then there is an intersection! :
         result.t = t;
         result.intersection = intersection;
         result.intersectionExists = true;
         result.normal = normal();
-
 
         return result;
     }
