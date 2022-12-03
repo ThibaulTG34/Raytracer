@@ -82,6 +82,7 @@ public:
                 intersection.t = t;
                 intersection.intersection = pointInter;
                 intersection.normal = normal();
+                intersection.normal.normalize();
             }
             else{
                 intersection.intersectionExists = false;
@@ -128,6 +129,7 @@ public:
                     intersection.intersectionExists = true;
                     intersection.t = t;
                     intersection.normal=normal();
+                    //intersection.normal.normalize();
                     intersection.intersection=pt;
                 }
                 else
