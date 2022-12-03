@@ -319,7 +319,7 @@ public:
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
                     if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0 && new_raySceneIntersection.t < lum.length())
                     {
-                        // v++;
+                        //v++;
                         color = Vec3(0, 0, 0);
                     }
                     else
@@ -328,7 +328,7 @@ public:
                     }
                 }
                 v /= area_light.size();
-                // v = 1 - v;
+                //v = 1 - v;
                 color = v * color;
             }
         }
