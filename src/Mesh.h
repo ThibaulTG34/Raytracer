@@ -214,7 +214,7 @@ public:
             Triangle tri = Triangle(c0, c1, c2);
             tmp_intersection = tri.getIntersection(ray);
 
-            if(tmp_intersection.intersectionExists) {
+            if(tmp_intersection.intersectionExists && tmp_intersection.t < closestIntersection.t) {
                 closestIntersection = tmp_intersection;
             }
 
