@@ -312,7 +312,8 @@ public:
                 float v = 0.f;
                 for (unsigned int i = 0; i < area_light.size(); i++)
                 {
-                    lum = area_light[0].pos - raySceneIntersection.raySquareIntersection.intersection;
+                    lum = area_light[i].pos - raySceneIntersection.raySquareIntersection.intersection;
+                    lum.normalize();
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
@@ -326,18 +327,6 @@ public:
                         v++;
                     }
                 }
-                /* float nbrayons = 0.f;
-                for (size_t j = 0; j < 10; j++)
-                {
-
-                    refl = refl - raySceneIntersection.raySquareIntersection.intersection;
-                    RaySceneIntersection iShadow = computeIntersection(Ray(raySceneIntersection.raySquareIntersection.intersection, refl));
-                    if (iShadow.intersectionExists && iShadow.t <= refl.length())
-                    {
-                        nbrayons++;
-                    }
-                }
-                color *= (1 - (nbrayons / 10.0)); */
                 v /= area_light.size();
                 // v = 1 - v;
                 color = v * color;
