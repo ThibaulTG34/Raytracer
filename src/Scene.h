@@ -311,7 +311,7 @@ public:
 
             else if (raySceneIntersection.typeOfIntersectedObject == 1)
             {
-                //unsigned int index = raySceneIntersection.objectIndex;
+                // unsigned int index = raySceneIntersection.objectIndex;
                 Vec3 normal_square = raySceneIntersection.raySquareIntersection.normal;
                 Vec3 light_diffuse;
                 Vec3 light_specular;
@@ -336,7 +336,7 @@ public:
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
-                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0 && new_raySceneIntersection.t < lum.length())
+                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length())
                     {
                         // v++;
                         color += Vec3(0, 0, 0);
@@ -353,7 +353,7 @@ public:
 
             else if (raySceneIntersection.typeOfIntersectedObject == 2)
             {
-                //unsigned int index = raySceneIntersection.objectIndex;
+                // unsigned int index = raySceneIntersection.objectIndex;
                 Vec3 normal_square = raySceneIntersection.rayMeshIntersection.normal;
                 Vec3 light_diffuse;
                 Vec3 light_specular;
@@ -378,7 +378,7 @@ public:
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.rayMeshIntersection.intersection, lum);
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray);
-                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.typeOfIntersectedObject == 0 && new_raySceneIntersection.t < lum.length())
+                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length())
                     {
                         // v++;
                         color += Vec3(0, 0, 0);
@@ -401,7 +401,7 @@ public:
         return color;
     }
 
-    Ray Reflection(Ray ray, Vec3 normal, Vec3 intersection)
+    Ray Reflection(Ray &ray, Vec3 &normal, Vec3 &intersection)
     {
         ray.direction().normalize();
         Vec3 dir = ray.direction() - (2.0 * (Vec3::dot(ray.direction(), normal) * normal));
@@ -410,11 +410,16 @@ public:
         return Ray(orig, dir);
     }
 
+    Ray Refraction(Ray &ray, Vec3 &normal, Vec3 &intersection)
+    {
+        
+    }
+
     Vec3 rayTrace(Ray const &rayStart)
     {
         // TODO appeler la fonction recursive
         Vec3 color;
-        color = rayTraceRecursiveSoftShadow(rayStart, 3);
+        color = rayTraceRecursiveSoftShadow(rayStart, 4);
         return color;
     }
 
@@ -584,7 +589,7 @@ public:
             s.material.diffuse_material = Vec3(1., 0., 0.);
             s.material.specular_material = Vec3(1., 0., 0.);
             s.material.shininess = 16;
-            s.material.transparency = 1.0;
+            s.material.transparency = 2.0;
             s.material.index_medium = 1.4;
         }
 
