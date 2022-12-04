@@ -414,7 +414,7 @@ public:
     {
         // TODO appeler la fonction recursive
         Vec3 color;
-        color = rayTraceRecursive1(rayStart, 3);
+        color = rayTraceRecursiveSoftShadow(rayStart, 3);
         return color;
     }
 
@@ -604,9 +604,9 @@ public:
         { // MESH
             meshes.resize(spheres.size() + 1);
             Mesh &s = meshes[meshes.size() - 1];
-            s.loadOFF("./data/epcot.off");
+            s.loadOFF("./data/sphere2.off");
             s.scale(Vec3(0.5, 0.5, 0.5));
-            s.translate(Vec3(-0.5, -1.5, +0.5));
+            s.translate(Vec3(-0.5, +0.5, 0));
             s.build_arrays();
             // s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);
