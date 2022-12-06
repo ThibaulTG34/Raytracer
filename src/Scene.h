@@ -132,7 +132,7 @@ public:
 
         // TODO RaySceneIntersection raySceneIntersection = computeIntersection(ray);
         Vec3 color;
-        RaySceneIntersection raySceneIntersection = computeIntersection(ray, 5.0f);
+        RaySceneIntersection raySceneIntersection = computeIntersection(ray, 4.8f);
         if (raySceneIntersection.intersectionExists)
         {
 
@@ -233,7 +233,7 @@ public:
                 light_specular += Vec3::compProduct(squares[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), squares[index].material.shininess), lights[0].material);
                 color += (light_diffuse + light_specular + light_ambient);
 
-                for (unsigned int i = 0; i < lights.size(); i++)
+                /* for (unsigned int i = 0; i < lights.size(); i++)
                 {
 
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
@@ -242,7 +242,7 @@ public:
                     {
                         return Vec3(0, 0, 0);
                     }
-                }
+                } */
             }
 
             else if (raySceneIntersection.typeOfIntersectedObject == 2)
@@ -333,7 +333,7 @@ public:
                     lum.normalize();
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
-                    RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray, 4.8f);
+                    RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray, z_near);
                     if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length())
                     {
                         // v++;
@@ -346,27 +346,27 @@ public:
                 }
                 v /= area_light.size();
                 // v = 1 - v;
-                std::cout << "color avant :" << color << std::endl;
+                //std::cout << "color avant :" << color << std::endl;
                 color = v * color;
-                std::cout << "color apres :"<< color << std::endl;
+                //std::cout << "color apres :"<< color << std::endl;
             }
 
             else if (raySceneIntersection.typeOfIntersectedObject == 2)
             {
-                /* // unsigned int index = raySceneIntersection.objectIndex;
-                Vec3 normal_square = raySceneIntersection.rayMeshIntersection.normal;
+                // unsigned int index = raySceneIntersection.objectIndex;
+                Vec3 normal_mesh = raySceneIntersection.rayMeshIntersection.normal;
                 Vec3 light_diffuse;
                 Vec3 light_specular;
                 Vec3 light_ambient;
                 Vec3 lum;
                 lum = lights[0].pos - raySceneIntersection.rayMeshIntersection.intersection;
                 lum.normalize();
-                Vec3 reflexion = (2 * std::max((float)0.0, Vec3::dot(normal_square, lum))) * normal_square - lum;
+                Vec3 reflexion = (2 * std::max((float)0.0, Vec3::dot(normal_mesh, lum))) * normal_mesh - lum;
                 reflexion.normalize();
                 Vec3 view = (-1) * ray.direction();
                 view.normalize();
                 light_ambient += meshes[index].material.ambient_material;
-                light_diffuse += Vec3::compProduct(meshes[index].material.diffuse_material * std::max((float)0.0, Vec3::dot(lum, normal_square)), lights[0].material);
+                light_diffuse += Vec3::compProduct(meshes[index].material.diffuse_material * std::max((float)0.0, Vec3::dot(lum, normal_mesh)), lights[0].material);
                 light_specular += Vec3::compProduct(meshes[index].material.specular_material * pow(std::max((float)0.0, Vec3::dot(reflexion, view)), meshes[index].material.shininess), lights[0].material);
                 color += (light_diffuse + light_specular + light_ambient);
 
@@ -389,15 +389,18 @@ public:
                 }
                 v /= area_light.size();
                 // v = 1 - v;
-                std::cout << color << std::endl;
                 color = v * color;
-                std::cout << color << std::endl; */
             }
 
             if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Mirror)
             {
-                color += rayTraceRecursiveSoftShadow(Reflection(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection), NRemainingBounces - 1, 0.0001f);
+                color = rayTraceRecursiveSoftShadow(Reflection(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection), NRemainingBounces - 1, 0.0001f);
             }
+
+            /* if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Glass)
+            {
+                color += rayTraceRecursiveSoftShadow(Refraction(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection, index), NRemainingBounces - 1, 0.0001f);
+            } */
         }
 
         return color;
@@ -405,22 +408,35 @@ public:
 
     Ray Reflection(Ray &ray, Vec3 &normal, Vec3 &intersection)
     {
-        ray.direction().normalize();
-        Vec3 dir = (2.0 * Vec3::dot(normal, (-1) * ray.direction()) * normal) + ray.direction();
+        //ray.direction().normalize();
+        //Vec3 dir = (2.0 * Vec3::dot(normal, (-1) * ray.direction()) * normal) + ray.direction();
+        Vec3 dir = ray.direction() - (2.0 * Vec3::dot(ray.direction(), normal) * normal);
+        dir.normalize();
         Vec3 orig = intersection;
 
         return Ray(orig, dir);
     }
 
-    Ray Refraction(Ray &ray, Vec3 &normal, Vec3 &intersection)
+    Ray Refraction(Ray &ray, Vec3 &normal, Vec3 &intersection, unsigned int index)
     {
+        double n;
+        n = spheres[index].material.index_medium;
+        float NdotD = Vec3::dot(ray.direction(), normal);
+        //Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
+        float sqrt_ = sqrt(1 - pow(n, 2) * (1 - pow(NdotD,2)));
+        Vec3 refr = n * ray.direction() - (n * NdotD + sqrt_) * normal;
+        
+        Vec3 orig = intersection;
+        refr.normalize();
+
+        return Ray(orig, refr);
     }
 
     Vec3 rayTrace(Ray const &rayStart)
     {
         // TODO appeler la fonction recursive
         Vec3 color;
-        color = rayTraceRecursiveSoftShadow(rayStart, 2, 4.8f);
+        color = rayTraceRecursiveSoftShadow(rayStart, 3, 4.8f);
         return color;
     }
 
@@ -508,8 +524,8 @@ public:
             s.scale(Vec3(2., 2., 1.));
             s.translate(Vec3(0., 0., -2.));
             s.build_arrays();
-            s.material.diffuse_material = Vec3(0., 0., 1.);
-            s.material.specular_material = Vec3(1., 1., 1.);
+            s.material.diffuse_material = Vec3(1., 1., 1.);
+            s.material.specular_material = Vec3(0., 0., 0.);
             s.material.shininess = 16;
         }
 
@@ -535,8 +551,8 @@ public:
             s.scale(Vec3(2., 2., 1.));
             s.rotate_y(-90);
             s.build_arrays();
-            s.material.diffuse_material = Vec3(0., 1., 0.4);
-            s.material.specular_material = Vec3(0.0, 1.0, 0.0);
+            s.material.diffuse_material = Vec3(0.9, 0.5, 0.9);
+            s.material.specular_material = Vec3(0.9, 0.5, 0.9);
             s.material.shininess = 16;
         }
 
@@ -548,8 +564,8 @@ public:
             s.scale(Vec3(2., 2., 1.));
             s.rotate_x(-90);
             s.build_arrays();
-            s.material.diffuse_material = Vec3(1.0, 0.3, 0.0);
-            s.material.specular_material = Vec3(0.0, 0.0, 0.0);
+            s.material.diffuse_material = Vec3(1., 1., 1.);
+            s.material.specular_material = Vec3(1., 1., 1.);
             s.material.shininess = 16;
         }
 
@@ -561,8 +577,8 @@ public:
             s.scale(Vec3(2., 2., 1.));
             s.rotate_x(90);
             s.build_arrays();
-            s.material.diffuse_material = Vec3(1., 0.8, 1.);
-            s.material.specular_material = Vec3(1., 1., 1.);
+            s.material.diffuse_material = Vec3(0.5, 0.5, 0.5);
+            s.material.specular_material = Vec3(0., 0., 0.);
             s.material.shininess = 16;
         }
 
@@ -574,7 +590,7 @@ public:
             s.scale(Vec3(2., 2., 1.));
             s.rotate_y(180);
             s.build_arrays();
-            s.material.diffuse_material = Vec3(0.2, 1.0, 0.6);
+            s.material.diffuse_material = Vec3(1., 1., 1.);
             s.material.specular_material = Vec3(1.0, 1.0, 1.0);
             s.material.shininess = 16;
         }
@@ -590,7 +606,7 @@ public:
             s.material.diffuse_material = Vec3(1., 0., 0.);
             s.material.specular_material = Vec3(1., 0., 0.);
             s.material.shininess = 16;
-            s.material.transparency = 2.0;
+            s.material.transparency = 1.0;
             s.material.index_medium = 1.4;
         }
 
@@ -601,24 +617,25 @@ public:
             s.m_radius = 0.75f;
             s.build_arrays();
             s.material.type = Material_Glass;
-            s.material.diffuse_material = Vec3(0., 1., 1.);
+            s.material.diffuse_material = Vec3(1., 1., 1.);
             s.material.specular_material = Vec3(1., 1., 1.);
             s.material.shininess = 16;
             s.material.transparency = 0.;
-            s.material.index_medium = 0.;
+            s.material.index_medium = 1.4;
         }
-        { // MESH
+
+        /* { // MESH
             meshes.resize(spheres.size() + 1);
             Mesh &s = meshes[meshes.size() - 1];
             s.loadOFF("./data/sphere2.off");
             s.scale(Vec3(0.5, 0.5, 0.5));
             s.translate(Vec3(-0.5, -1.5, +1));
             s.build_arrays();
-            // s.material.type = Material_Mirror;
+            s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);
             s.material.specular_material = Vec3(0.2, 0.2, 0.2);
             s.material.shininess = 20;
-        }
+        } */
     }
 
     void setup_mesh()
