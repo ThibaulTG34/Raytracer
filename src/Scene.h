@@ -164,26 +164,12 @@ public:
         for (size_t i = 0; i < nbEchantillon; i++)
         {
             Light l;
-            float val1 = ((float)(rand()) / (float)(RAND_MAX)) * 2;
-            float val2 = ((float)(rand()) / (float)(RAND_MAX)) * 2;
+            float val1 = ((float)(rand()) / (float)(RAND_MAX)) * 2; // offset x
+            float val2 = ((float)(rand()) / (float)(RAND_MAX)) * 2; // offset z
             l.pos = lights[0].pos;
-            l.pos[0] += val1; // offset x
-            l.pos[2] += val2; // offset z
+            l.pos[0] += val1;
+            l.pos[2] += val2;
             point_light[i] = l;
-            /*Light l;
-            l.material = lights[0].material;
-            int val1 = rand();
-            int val2 = rand();
-            float theta = 2 * M_PI * val1;
-            float phi = cos(2 * val2 - 1);
-            float x = lights[0].pos[0] + (lights[i].radius * sin(phi) * cos(theta));
-            float y = lights[0].pos[1] + (lights[i].radius * sin(phi) * sin(theta));
-            float z = lights[0].pos[2] + (lights[i].radius * cos(phi));
-            // Light l;
-            l.pos = Vec3(x, y, z);
-
-            // std::cout<<i<<std::endl;
-            */
         }
 
         return point_light;
@@ -346,9 +332,9 @@ public:
                 }
                 v /= area_light.size();
                 // v = 1 - v;
-                //std::cout << "color avant :" << color << std::endl;
+                // std::cout << "color avant :" << color << std::endl;
                 color = v * color;
-                //std::cout << "color apres :"<< color << std::endl;
+                // std::cout << "color apres :"<< color << std::endl;
             }
 
             else if (raySceneIntersection.typeOfIntersectedObject == 2)
@@ -397,6 +383,7 @@ public:
                 color = rayTraceRecursiveSoftShadow(Reflection(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection), NRemainingBounces - 1, 0.0001f);
             }
 
+
             /* if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Glass)
             {
                 color += rayTraceRecursiveSoftShadow(Refraction(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection, index), NRemainingBounces - 1, 0.0001f);
@@ -408,8 +395,8 @@ public:
 
     Ray Reflection(Ray &ray, Vec3 &normal, Vec3 &intersection)
     {
-        //ray.direction().normalize();
-        //Vec3 dir = (2.0 * Vec3::dot(normal, (-1) * ray.direction()) * normal) + ray.direction();
+        ray.direction().normalize();
+        // Vec3 dir = (2.0 * Vec3::dot(normal, (-1) * ray.direction()) * normal) + ray.direction();
         Vec3 dir = ray.direction() - (2.0 * Vec3::dot(ray.direction(), normal) * normal);
         dir.normalize();
         Vec3 orig = intersection;
@@ -422,10 +409,10 @@ public:
         double n;
         n = spheres[index].material.index_medium;
         float NdotD = Vec3::dot(ray.direction(), normal);
-        //Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
-        float sqrt_ = sqrt(1 - pow(n, 2) * (1 - pow(NdotD,2)));
+        // Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
+        float sqrt_ = sqrt(1 - pow(n, 2) * (1 - pow(NdotD, 2)));
         Vec3 refr = n * ray.direction() - (n * NdotD + sqrt_) * normal;
-        
+
         Vec3 orig = intersection;
         refr.normalize();
 
@@ -634,7 +621,7 @@ public:
             s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);
             s.material.specular_material = Vec3(0.2, 0.2, 0.2);
-            s.material.shininess = 20;
+            s.material.shininess = 16;
         } */
     }
 
@@ -663,7 +650,7 @@ public:
             // s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);
             s.material.specular_material = Vec3(0.2, 0.2, 0.2);
-            s.material.shininess = 20;
+            s.material.shininess = 16;
         }
     }
 };
