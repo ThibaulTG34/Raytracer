@@ -362,7 +362,7 @@ public:
                     lum = area_light[i].pos - raySceneIntersection.rayMeshIntersection.intersection;
                     lum.normalize();
                     Ray new_ray = Ray(raySceneIntersection.rayMeshIntersection.intersection, lum);
-                    RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray, 3.0f);
+                    RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray, 4.0f);
                     if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length())
                     {
                         // v++;
@@ -616,7 +616,7 @@ public:
             Mesh &s = meshes[meshes.size() - 1];
             s.loadOFF("./data/sphere2.off");
             s.scale(Vec3(0.5, 0.5, 0.5));
-            s.translate(Vec3(-0.5, -1.5, +1));
+            s.translate(Vec3(-0.5, -1.5, +0.5));
             s.build_arrays();
             s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 0., 1.);
