@@ -383,11 +383,11 @@ public:
                 color = rayTraceRecursiveSoftShadow(Reflection(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection), NRemainingBounces - 1, 0.0001f);
             }
 
-
-            /* if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Glass)
+            if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Glass)
             {
                 color += rayTraceRecursiveSoftShadow(Refraction(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection, index), NRemainingBounces - 1, 0.0001f);
-            } */
+            }
+
         }
 
         return color;
@@ -411,8 +411,7 @@ public:
         float NdotD = Vec3::dot(ray.direction(), normal);
         // Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
         float sqrt_ = sqrt(1 - pow(n, 2) * (1 - pow(NdotD, 2)));
-        Vec3 refr = n * ray.direction() - (n * NdotD + sqrt_) * normal;
-
+        Vec3 refr = (n * NdotD - sqrt_) * normal - n*ray.direction();
         Vec3 orig = intersection;
         refr.normalize();
 
@@ -514,6 +513,7 @@ public:
             s.material.diffuse_material = Vec3(1., 1., 1.);
             s.material.specular_material = Vec3(0., 0., 0.);
             s.material.shininess = 16;
+            s.material.type = Material_Mirror;
         }
 
         { // Left Wall
