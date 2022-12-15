@@ -406,7 +406,7 @@ public:
 
     Ray Refraction(Ray &ray, Vec3 &normal, Vec3 &intersection, unsigned int index)
     {
-        double n;
+        /* double n;
         n = spheres[index].material.index_medium;
         float NdotD = Vec3::dot(ray.direction(), normal);
         // Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
@@ -415,7 +415,58 @@ public:
         Vec3 orig = intersection;
         refr.normalize();
 
+        return Ray(orig, refr); */
+
+        /* Vec3 incident = ray.direction();
+        incident.normalize();
+        double n = spheres[index].material.index_medium;
+        double dot = Vec3::dot(normal, incident);
+        if (dot < -1) dot = -1;
+        else if (dot > 1) dot = 1;
+
+        double theta1 = acos(dot);
+        double theta2 = asin(sin(theta1) * n);
+
+        double cos1 = cos(theta1);
+        double cos2 = cos(theta2);
+
+        if (theta1 > asin(1/n) && n > 0) return ray;
+
+        Vec3 refr = incident * n + normal * (n * cos1 + cos2);
+        refr.normalize();
+
+        return Ray(intersection, refr); */
+
+        Vec3 incident = ray.direction();
+        incident.normalize();
+        double n = spheres[index].material.index_medium;
+        double dot = Vec3::dot(normal, incident);
+        Vec3 orig = intersection;
+        Vec3 bias = Vec3(0.00001, 0.00001, 0.00001);
+        if (dot >= 0) {
+            normal *= -1;
+            orig += bias;
+        }
+        else{
+            dot *= -1;
+            orig += bias;
+        }
+
+        Vec3 scal = dot * normal;
+        Vec3 vec1 = n * (incident + scal);
+        double cos = 1 - (n*n) * (1-dot*dot);
+
+        if (cos < 0.0) {
+            return Ray(Vec3(0,0,0), Vec3(0,0,0));
+        }
+
+        double sqrt_ = sqrt(cos);
+        Vec3 vec2 = sqrt_ * normal;
+
+        Vec3 refr = vec1 - vec2;
+        refr.normalize();
         return Ray(orig, refr);
+
     }
 
     Vec3 rayTrace(Ray const &rayStart)

@@ -169,9 +169,9 @@ void ray_trace_from_camera() {
     int w = glutGet(GLUT_WINDOW_WIDTH)  ,   h = glutGet(GLUT_WINDOW_HEIGHT);
     std::cout << "Ray tracing a " << w << " x " << h << " image" << std::endl;
     camera.apply();   
-    Vec3 pos , dir;         
+    Vec3 pos , dir;           
     //unsigned int nsamples = 100;
-    unsigned int nsamples = 10;   
+    unsigned int nsamples = 100;   
     std::vector< Vec3 > image( w*h , Vec3(0,0,0) );
     for (int y=0; y<h; y++){  
         for (int x=0; x<w; x++) { 
