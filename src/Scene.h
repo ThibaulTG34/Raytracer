@@ -158,17 +158,22 @@ public:
 
     std::vector<Light> Arealight(int nbEchantillon)
     {
-
         std::vector<Light> point_light;
         point_light.resize(nbEchantillon);
         for (size_t i = 0; i < nbEchantillon; i++)
         {
+            double rndx, rndz;
+            double sqrt_;
+            do
+            {
+                rndx = 2.0 * (double)rand() / RAND_MAX - 1.0;
+                rndz = 2.0 * (double)rand() / RAND_MAX - 1.0;
+                sqrt_ = sqrt(rndx * rndx + rndz * rndz);
+            } while (sqrt_ > 1.0);
             Light l;
-            float val1 = ((float)(rand()) / (float)(RAND_MAX)) * 2; // offset x
-            float val2 = ((float)(rand()) / (float)(RAND_MAX)) * 2; // offset z
             l.pos = lights[0].pos;
-            l.pos[0] += val1;
-            l.pos[2] += val2;
+            l.pos[0] += rndx;
+            l.pos[2] += rndz;
             point_light[i] = l;
         }
 
@@ -320,7 +325,7 @@ public:
                     // Vec3 intersection_point = ray.origin() + raySceneIntersection.raySquareIntersection.t * ray.direction();
                     Ray new_ray = Ray(raySceneIntersection.raySquareIntersection.intersection, lum);
                     RaySceneIntersection new_raySceneIntersection = computeIntersection(new_ray, z_near);
-                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length())
+                    if (new_raySceneIntersection.intersectionExists && new_raySceneIntersection.t < lum.length() && spheres[new_raySceneIntersection.objectIndex].material.type == Material_Mirror)
                     {
                         // v++;
                         color += Vec3(0, 0, 0);
@@ -385,9 +390,8 @@ public:
 
             if (NRemainingBounces > 0 && raySceneIntersection.typeOfIntersectedObject == 0 && spheres[index].material.type == Material_Glass)
             {
-                color += rayTraceRecursiveSoftShadow(Refraction(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection, index), NRemainingBounces - 1, 0.0001f);
+                color = rayTraceRecursiveSoftShadow(Refraction(ray, raySceneIntersection.raySphereIntersection.normal, raySceneIntersection.raySphereIntersection.intersection, index), NRemainingBounces - 1, 0.00001f) * spheres[index].material.transparency;
             }
-
         }
 
         return color;
@@ -401,72 +405,95 @@ public:
         dir.normalize();
         Vec3 orig = intersection;
 
-        return Ray(orig, dir);
+        return Ray(orig + 0.01 * dir, dir);
     }
 
     Ray Refraction(Ray &ray, Vec3 &normal, Vec3 &intersection, unsigned int index)
     {
-        /* double n;
-        n = spheres[index].material.index_medium;
-        float NdotD = Vec3::dot(ray.direction(), normal);
-        // Vec3 refr = (n * ray.direction()) + (n * NdotD - sqrt_) * normal;
-        float sqrt_ = sqrt(1 - pow(n, 2) * (1 - pow(NdotD, 2)));
-        Vec3 refr = (n * NdotD - sqrt_) * normal - n*ray.direction();
-        Vec3 orig = intersection;
-        refr.normalize();
 
-        return Ray(orig, refr); */
+        /* ray.direction().normalize();
+        float NdotD = Vec3::dot(normal, ray.direction());
 
-        /* Vec3 incident = ray.direction();
-        incident.normalize();
-        double n = spheres[index].material.index_medium;
-        double dot = Vec3::dot(normal, incident);
-        if (dot < -1) dot = -1;
-        else if (dot > 1) dot = 1;
-
-        double theta1 = acos(dot);
-        double theta2 = asin(sin(theta1) * n);
-
-        double cos1 = cos(theta1);
-        double cos2 = cos(theta2);
-
-        if (theta1 > asin(1/n) && n > 0) return ray;
-
-        Vec3 refr = incident * n + normal * (n * cos1 + cos2);
-        refr.normalize();
-
-        return Ray(intersection, refr); */
-
-        Vec3 incident = ray.direction();
-        incident.normalize();
-        double n = spheres[index].material.index_medium;
-        double dot = Vec3::dot(normal, incident);
-        Vec3 orig = intersection;
-        Vec3 bias = Vec3(0.00001, 0.00001, 0.00001);
-        if (dot >= 0) {
+        if (NdotD < 0.0)
+        {
             normal *= -1;
-            orig += bias;
-        }
-        else{
-            dot *= -1;
-            orig += bias;
+            NdotD = Vec3::dot(normal, ray.direction());
         }
 
-        Vec3 scal = dot * normal;
-        Vec3 vec1 = n * (incident + scal);
-        double cos = 1 - (n*n) * (1-dot*dot);
+        float alpha = acos(NdotD);
+        float beta;
+        if (NdotD < 0.0)
+            beta = 1.0 / spheres[index].material.index_medium;
+        else
+            beta = spheres[index].material.index_medium;
 
-        if (cos < 0.0) {
-            return Ray(Vec3(0,0,0), Vec3(0,0,0));
+        beta = beta * sin(alpha);
+
+        if (beta > 1.0)
+            beta = 1.0;
+
+        beta = asin(beta);
+        Vec3 refr = ray.direction() + (beta - alpha) * normal;
+        refr.normalize();*/
+        Vec3 direction = ray.direction();
+        direction.normalize();
+        float alpha = 0.f;
+        float beta = 0.f;
+        float NdotD = Vec3::dot(direction, normal);
+
+        if (NdotD < 0.0)
+        {
+            normal *= -1;
+            NdotD = Vec3::dot(direction, normal);
         }
 
-        double sqrt_ = sqrt(cos);
-        Vec3 vec2 = sqrt_ * normal;
+        alpha = acos(NdotD);
 
-        Vec3 refr = vec1 - vec2;
+        if (NdotD < 0.0)
+        {
+            beta = 1.0 / spheres[index].material.index_medium;
+        }
+        else
+        {
+            beta = spheres[index].material.index_medium;
+        }
+
+        beta *= sin(alpha);
+
+        if (beta > 1)
+        {
+            beta = 1;
+        }
+
+        beta = asin(beta);
+        Vec3 refr = direction + (beta - alpha) * normal;
         refr.normalize();
-        return Ray(orig, refr);
 
+        Ray new_ray(intersection + normal * 0.005, refr);
+        return new_ray;
+    }
+
+
+    void DrawSphere(float x, float y, float z, float r, float g, float b, float transp)
+    {
+        { // Motion Blur
+            spheres.resize(spheres.size() + 1);
+            Sphere &s = spheres[spheres.size() - 1];
+            s.m_center = Vec3(x, y, z);
+            s.m_radius = 0.75f;
+            s.build_arrays();
+            s.material.type = Material_Mirror;
+            s.material.diffuse_material = Vec3(r, g, b);
+            s.material.specular_material = Vec3(r, g, b);
+            s.material.shininess = 16;
+            s.material.transparency = transp;
+            s.material.index_medium = 0.;
+        }
+    }
+
+
+    void MotionBlur()
+    {
     }
 
     Vec3 rayTrace(Ray const &rayStart)
@@ -640,11 +667,11 @@ public:
             s.m_center = Vec3(1.0, -1.25, 0.5);
             s.m_radius = 0.75f;
             s.build_arrays();
-            s.material.type = Material_Mirror;
+            s.material.type = Material_Glass;
             s.material.diffuse_material = Vec3(1., 0., 0.);
             s.material.specular_material = Vec3(1., 0., 0.);
             s.material.shininess = 16;
-            s.material.transparency = 1.0;
+            s.material.transparency = 1.;
             s.material.index_medium = 1.4;
         }
 
@@ -654,14 +681,15 @@ public:
             s.m_center = Vec3(-1.0, -1.25, -0.5);
             s.m_radius = 0.75f;
             s.build_arrays();
-            s.material.type = Material_Glass;
+            s.material.type = Material_Mirror;
             s.material.diffuse_material = Vec3(1., 1., 1.);
             s.material.specular_material = Vec3(1., 1., 1.);
             s.material.shininess = 16;
             s.material.transparency = 0.;
-            s.material.index_medium = 1.4;
+            s.material.index_medium = 0.;
         }
 
+        MotionBlur();
         /* { // MESH
             meshes.resize(spheres.size() + 1);
             Mesh &s = meshes[meshes.size() - 1];
