@@ -1,6 +1,9 @@
-# Ray Tracing
+# Ray Tracing en C++
 
-1. Intersection with objects (spheres, squares, meshes)
-2. Phong illumination
-3. Hard/Soft shadow
-4. Refraction
+## Présentation du projet
+Dans ce projet, nous devions implémenter un ray tracing en C++/OpenGL. Pour cela, nous devions calculer des intersections avec différents objets (plan, sphère, maillage). 
+
+- Intersection with objects (spheres, squares, meshes)
+- Phong illumination
+- Hard/Soft shadow
+- Refraction
